@@ -1,0 +1,20 @@
+{% extends "update_form.html" %}
+{% block title %}    <title>Job Position Entry</title> {% endblock %}
+{% block update_form %}
+<h2>Enter New job position</h2>
+<p>
+    <form action="/add_tech/" method="post">
+	<label for="Tech">Technolgy Used:</label>
+        <input type="text" name="Tech"><br/>
+       	<label for="Type">Type:</label>
+	<select name="tech_type">
+		<option name="L">Language</option>
+		<option name="Fr">Framework</option>
+		<option name="T">Tools</option>
+		<option name="K">Kits</option>
+		<option name="E">Extensions</option>
+	</select>
+	<input type="submit" name="Submit"><br/>
+    </form>
+</p>
+{% endblock %}
