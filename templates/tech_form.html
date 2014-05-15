@@ -4,7 +4,7 @@
 <h2>Enter New Tech Experience</h2>
 
 {% for err in error %}
-{{ err }}
+ERROR:{{ err }}
 {% endfor %}
 {% if have %}
 Item already exists!
@@ -31,8 +31,13 @@ FO SURE!!
 </p>
 
 <p>
+<form action="/remove_tech/" method="POST">
+<!-- Since we are inferring multiple can be removed, submitting as POST. In a restful API structure, we'd DELETE in a CRUD manner.-->
 {% for tech in techs %}
-{{ tech.name }} :: {{ tech.tech_type }} <br/>
+<input type="checkbox" name="rm_techs[]" value="{{ tech.name }}"> {{ tech.name }} :: {{ tech.tech_type }} <br/>
 {% endfor %}
+<input type="submit" name="remove" value="Remove">
 </p>
+
+<form>
 {% endblock %}

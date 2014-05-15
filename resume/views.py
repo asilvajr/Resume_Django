@@ -22,6 +22,24 @@ def add_course(request):
     
 def add_project(request):
     return None
+
+def remove_job(request):
+    return None
+
+def remove_exp(request):
+    return None
+    
+def remove_tech(request):
+    for tech in request.POST.getlist('rm_techs'):
+        t = Technologies.objects.get(name=tech)
+        t.delete()
+    return add_tech(request)
+    
+def remove_course(request):
+    return None
+    
+def remove_project(request):
+    return None
     
 def submit_job(request):
     vals = request.POST.dict()
@@ -31,7 +49,7 @@ def submit_job(request):
     
 def submit_exp(request):
     vals = request.POST.dict()
-    exp = Experiences(event=vals['event'],decription=vals['exp_descript'],tech_exp=vals['technology'],job_exp=vals[''])
+    exp = Experiences(event=vals['event'],decription=vals['exp_descript'],tech_exp=vals['technology'],job_exp=vals['jobs'])
     exp.save()
     return render(request,'exp_form.html',vals)
 
@@ -64,9 +82,18 @@ def submit_project(request):
     proj.save()
     return render(request, 'project_form.html',vals)
 
-def add_update(request, option):
-    t = loader.get_template('job_form.html')
-    c = Context({})
+def remove_entry(request,option):
+    options={
+        'job':remove_job(request),
+        'exp':remove_exp(request),
+        'tech':remove_tech(request),
+        'course':remove_course(request),
+        'project':remove_project(request)
+        }
+    form_html = options[option]
+    return form_html
+
+def add_entry(request, option):
     options={
         'job':add_job(request),
         'exp':add_exp(request),

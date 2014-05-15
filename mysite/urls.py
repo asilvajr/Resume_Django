@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 from mysite.views import hello, current_datetime, hours_ahead
-from resume.views import add_update
+from resume.views import add_entry, remove_entry
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -19,5 +19,6 @@ urlpatterns = patterns('',
     url(r'^$', 'mysite.views.hello', name='home'),
     url(r'^time/$',current_datetime),
     url(r'^hours_ahead/plus/(\d{1,2})$',hours_ahead),
-    url(r'^add_(\w+)/$',add_update),
+    url(r'^add_(\w+)/$',add_entry),
+    url(r'^remove_(\w+)/$',remove_entry),
 )
