@@ -5,12 +5,14 @@
 <p>
     <form action="/add_experience/" method="post">
 	<label for="Event">Event:</label>
-        <input type="text" name="Event"><br/>
+        <input type="text" name="event"><br/>
        	<label for="Description">Description:</label>
 	<textarea type="textarea" name="exp_descript"></textarea><br/>
 	<label for="Technology">Technology Used:</label>
-	<input type="text" name="Technology"><br/>
-	<input type="submit" name="Submit"><br/>
+    {% for tech in techs %}
+	<input type="text" class="tech_group" name="technologies" value="{{ techs }}"><br/>
+    {% endloop %}
+	<input type="submit" name="submit"><br/>
     </form>
 </p>
 {% endblock %}

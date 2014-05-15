@@ -2,10 +2,22 @@
 {% block title %}    <title>New Tech Entry</title> {% endblock %}
 {% block update_form %}
 <h2>Enter New Tech Experience</h2>
+
+{% for err in error %}
+{{ err }}
+{% endfor %}
+{% if have %}
+Item already exists!
+    {{ have_name }} does exist as a {{ have_type }}
+{% else %}
+Nothing Done!
+{{ have_name }}
+FO SURE!!
+{% endif %}
 <p>
-    <form action="/add_tech/" method="post">
+    <form action="/add_tech/" method="POST">
 	<label for="Tech">Technolgy Used:</label>
-        <input type="text" name="Tech"><br/>
+        <input type="text" name="tech_name"><br/>
        	<label for="Type">Type:</label>
 	<select name="tech_type">
 		<option name="L">Language</option>
@@ -13,8 +25,14 @@
 		<option name="T">Tools</option>
 		<option name="K">Kits</option>
 		<option name="E">Extensions</option>
-	</select>
-	<input type="submit" name="Submit"><br/>
+	</select><br/>
+	<input type="submit" name="submit"><br/>
     </form>
+</p>
+
+<p>
+{% for tech in techs %}
+{{ tech.name }} :: {{ tech.tech_type }} <br/>
+{% endfor %}
 </p>
 {% endblock %}

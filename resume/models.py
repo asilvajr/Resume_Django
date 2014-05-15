@@ -12,6 +12,7 @@ class Jobs(models.Model):
 class Courses(models.Model):
 	course_name = models.CharField(max_length=30)
 	course_description = models.TextField()
+	
 
 class Technologies(models.Model):
 	TECH_TYPES = (
@@ -29,6 +30,9 @@ class Experiences(models.Model):
         event = models.CharField(max_length=50)
         description = models.TextField()
         job_exp = models.ForeignKey(Jobs)
-        course_exp = models.ForeignKey(Courses)
         tech_exp = models.ManyToManyField(Technologies)
-	
+
+class Projects(models.Model):
+	tech_used = models.ManyToManyField(Technologies)
+	proj_description = models.TextField()
+	course_exp = models.ForeignKey(Courses)

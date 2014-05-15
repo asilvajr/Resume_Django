@@ -1,4 +1,5 @@
 from django.template import Context, loader
+from django.shortcuts import render
 from django.http import HttpResponse
 import datetime
 
@@ -21,22 +22,3 @@ def hours_ahead(request, offset):
     html = "<html><body>In %s hour(s), it will be %s.</body></html>" % (offset, dt)
     return HttpResponse(html)
 
-def job_update(request):
-    t = loader.get_template('job_form.html')
-    c = Context({})
-    return HttpResponse(t.render(c))
-
-def tech_update(request):
-    t = loader.get_template('tech_form.html')
-    c = Context({})
-    return HttpResponse(t.render(c))
-
-def course_update(request):
-    t = loader.get_template('course_form.html')
-    c = Context({})
-    return HttpResponse(t.render(c))
-
-def exp_update(request):
-    t = loader.get_template('exp_form.html')
-    c = Context({})
-    return HttpResponse(t.render(c))
