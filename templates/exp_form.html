@@ -1,18 +1,55 @@
 {% extends "update_form.html" %}
-{% block title %}    <title>Solo Experience Entry</title> {% endblock %}
+{% block title %}    <title>Experience Entry</title> {% endblock %}
+{% block header_panel %}
+    Nein!
+{% endblock %}
+{% block info_pane %}
+    {% if added_exp %}
+        <h3> Added Experience </h3>
+        <p>
+        Event:{{ added_exp.event }}</br>
+        Desctiption:{{ added_exp.description }}
+        Technologies:
+        {% for tech in added_exp.tech_exp %}
+            <div class="tech_pill">{{ tech }}</div>,
+        {% endfor %}
+        </p>
+    {% endif %}
+{% endblock %}
+{% block error_block %}
+    {% if errors %}
+        {% for err in errors %}
+        ERROR:{{ err }}
+        {% endfor %}
+    {% endif %}
+{% endblock %}
 {% block update_form %}
-<h2>Enter New Experience</h2>
-<p>
-    <form action="/add_experience/" method="post">
-	<label for="Event">Event:</label>
-        <input type="text" name="event"><br/>
-       	<label for="Description">Description:</label>
-	<textarea type="textarea" name="exp_descript"></textarea><br/>
-	<label for="Technology">Technology Used:</label>
-    {% for tech in techs %}
-	<input type="text" class="tech_group" name="technologies" value="{{ techs }}"><br/>
-    {% endloop %}
-	<input type="submit" name="submit"><br/>
+    <h2>Enter New Experience</h2>
+    <p>
+        <form action="/add_exp/" method="POST">
+	    <label for="Event">Event:</label>
+            <input type="text" name="event"><br/>
+           	<label for="Description">Description:</label>
+	    <textarea type="textarea" name="exp_descript"></textarea><br/>
+	    <label for="Technology">Technology Used:</label>
+        {% for tech in techs %}
+	    <input type="checkbox" class="tech_{{ tech.tech_type }}" name="technologies" value="{{ tech.id }}">{{ tech.name }} :: {{ tech.tech_type }}<br/>
+        {% endfor %}
+	    <input type="submit" name="submit"><br/>
+        </form>
+    </p>
+{% endblock %}
+{% block modify_entries %}
+    {% if not exps %}
+    <h3>No Experiences have been entered; thus nothing be modified</h3>
+    {% endif %}
+    <form action="/remove_exp/" method="POST">
+    {% for exp in exps %}
+    <input type="checkbox" class="experiences" name="exp_{{ exp.id }}" value="{{ exp.id }}">{{ exp.event }} - {{ exp.description }}<br/>
+        {% for tech in exp_techs %}
+        <div class="tech_pill">{{ tech.name }}</div>,
+        {% endfor %}
+    {% endfor %}
+    <input type="submit" name="remove" value="Remove"><br/>
     </form>
-</p>
 {% endblock %}

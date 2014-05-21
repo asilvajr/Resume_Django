@@ -1,21 +1,24 @@
 from django.template import Context, loader
 from django.http import HttpResponse
 from django.shortcuts import render
-from resume.models import Technologies
+from resume.models import Technologies, Experiences
 # Create your views here.
-
 
 def add_job(request):
     return None
+    
 def add_exp(request):    
-    return None
+    if 'submit' in request.POST:
+        return submit_exp(request)
+    techs = Technologies.objects.all() #To load a list for the form.
+    exps = Experiences.objects.all()
+    return render(request, 'exp_form.html',{'techs':techs,'exps':exps})
+
 def add_tech(request):
     if 'submit' in request.POST:
-        submit_tech(request)
+        return submit_tech(request)
     techs = Technologies.objects.all()
-    t = loader.get_template('tech_form.html')
-    c = Context({'techs':techs})
-    return render(request, 'tech_form.html',c)
+    return render(request, 'tech_form.html',{'techs':techs})
 
 def add_course(request):
     return None
@@ -27,13 +30,25 @@ def remove_job(request):
     return None
 
 def remove_exp(request):
-    return None
+    exp_list = []
+    if 'remove' in request.POST:
+        for exp_id in request.POST.getlist('rm_exp[]'):
+            exp = Experiences.objects.get(id=exp_id)
+            print "Exp to delete"+exp
+            exp.delete()
+    techs = Technologies.objects.all()
+    exp_list = Experiences.objects.all()
+    return render(request,'exp_form.html',Context({'techs':techs,'list':exp_list}))
     
 def remove_tech(request):
-    for tech in request.POST.getlist('rm_techs'):
-        t = Technologies.objects.get(name=tech)
-        t.delete()
-    return add_tech(request)
+    tech_list = []
+    if 'remove' in request.POST:
+        for tech in request.POST.getlist('rm_techs[]'):
+            t = Technologies.objects.get(name=tech)
+            t.delete()
+            tech_list.append(tech)
+    techs = Technologies.objects.all()
+    return render(request,'tech_form.html',Context({'techs':techs,'list':tech_list}))
     
 def remove_course(request):
     return None
@@ -49,24 +64,31 @@ def submit_job(request):
     
 def submit_exp(request):
     vals = request.POST.dict()
-    exp = Experiences(event=vals['event'],decription=vals['exp_descript'],tech_exp=vals['technology'],job_exp=vals['jobs'])
+    exp = Experiences(event=vals['event'],description=vals['exp_descript'])
+    for tid in request.POST.getlist('exp_techs[]'):
+        tech = Technologies.objects.get(id=tid)
+        exp.Technologies.add(tech)
     exp.save()
-    return render(request,'exp_form.html',vals)
+    exps = Experiences.objects.all()
+    techs = Technologies.objects.all()
+    return render(request,'exp_form.html',{'techs':techs,'exps':exps})
 
 def submit_tech(request):
-    vals = request.POST.copy()
+    vals = request.POST.dict()
+    vals['errors']=[]
     if vals['tech_name']:
-        exists=Technologies.objects.get(name=vals['tech_name'])
+        try:
+            exists=Technologies.objects.get(name=vals['tech_name'])
+        except Technologies.DoesNotExist:
+            exists=None
         if not exists:
             tech = Technologies(name=vals['tech_name'],tech_type=vals['tech_type'])
             tech.save()
         else:
-            error=[]
-            error.append(exists.name + " exists as a "+exists.tech_type)
-            vals['error']=error
+            vals['errors'].append(exists.name + "already exists as a " + exists.tech_type)
     else:
-        error=[]
-        error.append("Added Nothing, Text Feild was empty")
+        vals['errors'].append("Added Nothing, Text Feild was empty")
+    vals['techs'] = Technologies.objects.all()
     return render(request, 'tech_form.html', vals)
 
 
@@ -94,6 +116,7 @@ def remove_entry(request,option):
     return form_html
 
 def add_entry(request, option):
+    print "Print Option in Url is:"+option
     options={
         'job':add_job(request),
         'exp':add_exp(request),
@@ -101,7 +124,6 @@ def add_entry(request, option):
         'course':add_course(request),
         'project':add_project(request)
         }
-    form_html = options[option]
-    
+    form_html = options[option]    
     return form_html
 

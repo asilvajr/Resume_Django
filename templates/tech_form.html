@@ -1,19 +1,37 @@
 {% extends "update_form.html" %}
 {% block title %}    <title>New Tech Entry</title> {% endblock %}
+
+{% block header_panel %} 
+    Nien! 
+{% endblock %}
+
+{% block info_pane %}
+    {% if added_tech %}
+    <h3>Added Tech</h3>
+    <p>
+    Tech: {{ added_tech.name}}
+    Tech Type: {{ added_tech.tech_type }}
+    </p>
+    {% endif %}
+    
+    {% if removed_tech %}
+        <h3> Removed the following Tech:</h3>
+        {% for tech in removed_tech %}
+            --{{ tech }}<br/>
+        {% endfor%}
+    {% endif %}
+    <!-- If there is a duplicate, error block will handle it from the back.-->
+{% endblock %}
+{% block error_block %}    
+    {% if errors %}
+        {% for err in errors %}
+        ERROR:{{ err }}
+        {% endfor %}
+    {% endif %}
+{% endblock %}
+
 {% block update_form %}
 <h2>Enter New Tech Experience</h2>
-
-{% for err in error %}
-ERROR:{{ err }}
-{% endfor %}
-{% if have %}
-Item already exists!
-    {{ have_name }} does exist as a {{ have_type }}
-{% else %}
-Nothing Done!
-{{ have_name }}
-FO SURE!!
-{% endif %}
 <p>
     <form action="/add_tech/" method="POST">
 	<label for="Tech">Technolgy Used:</label>
@@ -41,3 +59,18 @@ FO SURE!!
 
 <form>
 {% endblock %}
+
+
+{% block modify_entries %}
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
