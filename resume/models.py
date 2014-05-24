@@ -8,7 +8,8 @@ class Technologies(models.Model):
 		('Fr','Framework'),
 		('T','Tools'),
 		('K','Kits'),
-		('E','Extension')
+		('E','Extension'),
+		('DB','Databases')
 	)
 	name = models.CharField(max_length=30)
 	tech_type = models.CharField(max_length=2,choices=TECH_TYPES)
@@ -25,7 +26,7 @@ class Jobs(models.Model):
 	location = models.CharField(max_length=30)
 	start_date = models.DateField()
 	end_date = models.DateField()
-	experiences = models.ForeignKey(Experiences)
+	experiences = models.ForeignKey(Experiences, blank=True, null=True)
 
 class Projects(models.Model):
 	tech_used = models.ManyToManyField(Technologies)

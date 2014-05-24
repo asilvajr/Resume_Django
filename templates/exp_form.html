@@ -33,7 +33,7 @@
 	    <textarea type="textarea" name="exp_descript"></textarea><br/>
 	    <label for="Technology">Technology Used:</label>
         {% for tech in techs %}
-	    <input type="checkbox" class="tech_{{ tech.tech_type }}" name="technologies" value="{{ tech.id }}">{{ tech.name }} :: {{ tech.tech_type }}<br/>
+	    <input type="checkbox" class="tech_{{ tech.tech_type }}" name="tech_exps[]" value="{{ tech.id }}">{{ tech.name }} :: {{ tech.tech_type }}<br/>
         {% endfor %}
 	    <input type="submit" name="submit"><br/>
         </form>
@@ -45,9 +45,9 @@
     {% endif %}
     <form action="/remove_exp/" method="POST">
     {% for exp in exps %}
-    <input type="checkbox" class="experiences" name="exp_{{ exp.id }}" value="{{ exp.id }}">{{ exp.event }} - {{ exp.description }}<br/>
-        {% for tech in exp_techs %}
-        <div class="tech_pill">{{ tech.name }}</div>,
+    <input type="checkbox" class="experiences" name="rm_exps[]" value="{{ exp.id }}">{{ exp.event }} - {{ exp.description }} :: <br/>
+        {% for tech in exp.tech_exp.all %}
+            <div class="tech_pill">{{ tech.name }}</div>{% if not forloop.last %},{% endif %}
         {% endfor %}
     {% endfor %}
     <input type="submit" name="remove" value="Remove"><br/>

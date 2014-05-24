@@ -1,11 +1,14 @@
 from django.template import Context, loader
 from django.http import HttpResponse
 from django.shortcuts import render
-from resume.models import Technologies, Experiences
+from resume.models import Technologies, Experiences, Jobs
 # Create your views here.
 
 def add_job(request):
-    return None
+    if 'submit' in request.POST:
+        return submit_job(request)
+    jobs = Jobs.objects.all()
+    return render(request, 'job_form.html',{'jobs':jobs})
     
 def add_exp(request):    
     if 'submit' in request.POST:
@@ -32,13 +35,13 @@ def remove_job(request):
 def remove_exp(request):
     exp_list = []
     if 'remove' in request.POST:
-        for exp_id in request.POST.getlist('rm_exp[]'):
+        for exp_id in request.POST.getlist('rm_exps[]'):
             exp = Experiences.objects.get(id=exp_id)
-            print "Exp to delete"+exp
+            print "Exp to delete"+exp_id
             exp.delete()
     techs = Technologies.objects.all()
-    exp_list = Experiences.objects.all()
-    return render(request,'exp_form.html',Context({'techs':techs,'list':exp_list}))
+    exps_list = Experiences.objects.all()
+    return render(request,'exp_form.html',Context({'techs':techs,'exps':exps_list}))
     
 def remove_tech(request):
     tech_list = []
@@ -58,16 +61,35 @@ def remove_project(request):
     
 def submit_job(request):
     vals = request.POST.dict()
-    job = Jobs(Company=vals['company'],position=vals['position'],location=vals['location'],start_date=vals['start_date'],end_date=vals['end_date'])
+    job = Jobs(company=vals['company'],position=vals['position'],location=vals['location'],start_date=vals['start_date'],end_date=vals['end_date'])
     job.save()
-    return render(request, 'job_form.html',vals)
+    jobs = Jobs.objects.all()
+    return render(request, 'job_form.html',{'jobs':jobs})
+    
+def modify_job(request):
+    vals=request.POST.dict()
+    jid = vals.get('mod_jobs',None)
+    if jid:
+        job = Jobs.objects.get(id=jid)
+        #load all the experiences related to the job.
+        #add more experiences
+        #submit
+    else:
+        jobs = Jobs.objects.all()     
+        return render(request,'job_form.html',{'jobs':jobs})    
+    techs = Technologies.objects.all()
+    exps = Experiences.objects.filter()
+    return render(request,'job_exp_form.html',{'job':job,'techs':techs})
+    
     
 def submit_exp(request):
     vals = request.POST.dict()
     exp = Experiences(event=vals['event'],description=vals['exp_descript'])
-    for tid in request.POST.getlist('exp_techs[]'):
+    exp.save()
+    for tid in request.POST.getlist('tech_exps[]'):
         tech = Technologies.objects.get(id=tid)
-        exp.Technologies.add(tech)
+        print "Vals" + vals['event'] + "added tech:" + tid
+        exp.tech_exp.add(tech)
     exp.save()
     exps = Experiences.objects.all()
     techs = Technologies.objects.all()
@@ -76,7 +98,7 @@ def submit_exp(request):
 def submit_tech(request):
     vals = request.POST.dict()
     vals['errors']=[]
-    if vals['tech_name']:
+    if vals.get('tech_name',None):
         try:
             exists=Technologies.objects.get(name=vals['tech_name'])
         except Technologies.DoesNotExist:
@@ -88,8 +110,8 @@ def submit_tech(request):
             vals['errors'].append(exists.name + "already exists as a " + exists.tech_type)
     else:
         vals['errors'].append("Added Nothing, Text Feild was empty")
-    vals['techs'] = Technologies.objects.all()
-    return render(request, 'tech_form.html', vals)
+    techs = Technologies.objects.all()
+    return render(request, 'tech_form.html', {'techs':techs})
 
 
 def submit_course(request):
@@ -116,14 +138,17 @@ def remove_entry(request,option):
     return form_html
 
 def add_entry(request, option):
-    print "Print Option in Url is:"+option
+    print "Print Option in Url is: "+ option
     options={
         'job':add_job(request),
         'exp':add_exp(request),
         'tech':add_tech(request),
         'course':add_course(request),
-        'project':add_project(request)
-        }
-    form_html = options[option]    
-    return form_html
+        'project':add_project(request)}
+    if option in options.keys():
+	response = HttpResponse("there wasa an error loading " + option + ".")
+        return options.get(option, response)
+    else:
+	return HttpResponse("This is the response: "+ option + ".")
+
 
