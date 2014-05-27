@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
-from mysite.views import hello, current_datetime, hours_ahead
+from django.views.generic import TemplateView, RedirectView
+from mysite.views import front, current_datetime, hours_ahead,about_me, brz_miles
 from resume.views import add_entry, remove_entry, modify_job, add_exp, add_tech, add_job, remove_exp, remove_tech, remove_job
 
 # Uncomment the next two lines to enable the admin:
@@ -13,11 +14,14 @@ urlpatterns = patterns('',
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
+    #url(r'^about/', TemplateView.as_view(template_name="me.html")),
+    #url(r'^about', 'django.views.generic.simple.direct_to_template', {'template':'/static/me.html'}),
     # Uncomment the next line to enable the admin:
     # url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', 'mysite.views.hello', name='home'),
+
+    url(r'^$', about_me, name='home'),
     url(r'^time/$',current_datetime),
+    url(r'^brz_miles/',brz_miles),
     url(r'^hours_ahead/plus/(\d{1,2})$',hours_ahead),
     url(r'^add_exp/$',add_exp),
     url(r'^add_tech/$',add_tech),

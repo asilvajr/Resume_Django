@@ -1,12 +1,30 @@
-from django.template import Context, loader
-from django.shortcuts import render
+from django.template import Context, Template, loader
+from django.template.loader import get_template
+from django.shortcuts import render,render_to_response
 from django.http import HttpResponse
-import datetime
+from datetime import *
 
 
-def hello(request):
-    return HttpResponse("Hello world")
+def front(request):
+    return render(request,"me.html",{})
 
+def about_me(request):
+    return render_to_response("about.html")
+
+def brz_miles(request,plus=1):
+
+    mpweek = lambda x : x * 288.461538
+    mpday = lambda y : y * 41.2087912
+    start = date(2013,11,22)
+    end = datetime.now().date()
+    delta = (end - start).days
+    weeks = delta / 7
+    days = delta % 7
+    mileage_allowance = mpweek(weeks)  + mpday(days)
+    mileage_plus = mpweek(weeks+plus)
+    template = get_template('brz_miles.html')
+    html= template.render(Context({'mileage_allowance':mileage_allowance,'mileage_plus':mileage_plus,'weeks':weeks,'days':days})) 
+    return HttpResponse(html)
 
 def current_datetime(request):
     now = datetime.datetime.now()
