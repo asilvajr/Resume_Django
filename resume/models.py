@@ -13,12 +13,6 @@ class Technologies(models.Model):
 	)
 	name = models.CharField(max_length=30)
 	tech_type = models.CharField(max_length=2,choices=TECH_TYPES)
-	
-
-class Experiences(models.Model):
-        event = models.CharField(max_length=50)
-        description = models.TextField()
-        tech_exp = models.ManyToManyField(Technologies)
 
 class Jobs(models.Model):
 	company = models.CharField(max_length=40)
@@ -26,13 +20,18 @@ class Jobs(models.Model):
 	location = models.CharField(max_length=30)
 	start_date = models.DateField()
 	end_date = models.DateField()
-	experiences = models.ForeignKey(Experiences, blank=True, null=True)
+
+class Experiences(models.Model):
+        event = models.CharField(max_length=50)
+        description = models.TextField()
+        tech_exp = models.ManyToManyField(Technologies)
+        job = models.ForeignKey(Jobs)
 
 class Projects(models.Model):
 	tech_used = models.ManyToManyField(Technologies)
 	proj_description = models.TextField()
+	courses = models.ForeignKey(Experiences, blank=True, null=True)
 
 class Courses(models.Model):
 	course_name = models.CharField(max_length=30)
 	course_description = models.TextField()
-	projects = models.ForeignKey(Projects)
