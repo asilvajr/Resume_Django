@@ -1,21 +1,44 @@
 from django.template import Context, loader
 from django.http import HttpResponse
-from django.shortcuts import render
-from resume.models import Technologies, Experiences, Jobs
+from django.shortcuts import render,render_to_response
+from django.db.models import Q
+from resume.models import Technologies, Experiences, Jobs, Courses, Projects
+import yaml
+
+stream = open("resume/static/text.yml","r")
+yaml_dict = yaml.load(stream)
+
 # Create your views here.
+def test_div(request):
+    print "Test View"
+    print yaml.dump(yaml_dict)
+    return HttpResponse("<h2> Go Big or Got Home </h2>")
+
+def resume_view(request):
+    vals = dict()
+    vals['jobs'] = Jobs.objects.all()
+    tech_queryset = Technologies.objects.all()
+    vals['langs'] = tech_queryset.filter(tech_type="Language")
+    vals['databases'] = tech_queryset.filter(tech_type="Databases") #MySql, sqlite3, MS-SQL
+    vals['frameworks'] = tech_queryset.filter(tech_type="Framework") #django, #rails, #mason
+    vals['tools_kits'] = tech_queryset.filter(
+        Q(tech_type="Tools") | Q(tech_type="Kits")#Tools=wireshark, VI, sublime2 and #kits=bootstrap
+        )
+    vals['exps'] = Experiences.objects.all()
+    vals['courses'] = Courses.objects.all() 
+    vals['projs'] = Projects.objects.all()
+    return render_to_response('resume_view.html',Context(vals))
 
 def remove_job(request):
     return None
 
-def remove_exp(request):
-    exp_list = []
-    if 'remove' in request.POST:
-        for exp_id in request.POST.getlist('rm_exps[]'):
-            exp = Experiences.objects.get(id=exp_id)
-            print "Exp to delete"+exp_id
-            exp.delete()
+def remove_exp(request,job_):
+    for exp_id in request.POST.getlist('rm_exps[]'):
+        exp = Experiences.objects.get(id=exp_id)
+        print "Exp to delete"+exp_id
+        exp.delete()
     techs = Technologies.objects.all()
-    exps_list = Experiences.objects.all()
+    exps_list = Experiences.objects.filter(job=job_)
     return render(request,'exp_form.html',Context({'techs':techs,'exps':exps_list}))
     
 def remove_tech(request):
@@ -26,7 +49,8 @@ def remove_tech(request):
             t.delete()
             tech_list.append(tech)
     techs = Technologies.objects.all()
-    return render(request,'tech_form.html',Context({'techs':techs,'list':tech_list}))
+    return Context({'techs':techs,'list':tech_list})
+    #return render(request,'tech_form.html',Context({'techs':techs,'list':tech_list}))
     
 def remove_course(request):
     return None
@@ -47,23 +71,21 @@ def modify_job(request):
     vals=request.POST.dict()
     jid = vals.get('mod_jobs',None)
     if jid:
-        job = Jobs.objects.get(id=jid)
-        #load all the experiences related to the job.
-        #add more experiences
-        #submit
+        job_ = Jobs.objects.get(id=jid)
+        exps = Experiences.objects.filter(job=job_)
+        techs = Technologies.objects.all()
+        return render_to_response('job_exp_form.html',{'job':job_,'techs':techs,'exps':exps})
     else:
         jobs = Jobs.objects.all()     
-        return render(request,'job_form.html',{'jobs':jobs})    
-    techs = Technologies.objects.all()
-    exps = Experiences.objects.filter()
-    return render(request,'job_exp_form.html',{'job':job,'techs':techs})
+        return render_to_response('job_form.html',{'jobs':jobs})    
     
     
-def add_exp(requestjob_):
+def add_exp(request,job_):
     vals = request.POST.dict()
     exp = Experiences(event=vals['event'],description=vals['exp_descript'])
     exp.job = job_
     exp.save()
+    #print exp.event + "Was saved with exp_id" + exp.id
     for tid in request.POST.getlist('tech_exps[]'):
         tech = Technologies.objects.get(id=tid)
         print "Vals" + vals['event'] + "added tech:" + tech.name
@@ -89,41 +111,31 @@ def add_tech(request):
     else:
         vals['errors'].append("Added Nothing, Text Feild was empty")
     techs = Technologies.objects.all()
-    return render_to_response('tech_form.html', {'techs':techs})
+    return Context({'techs':techs})
+    #return render_to_response('tech_form.html', {'techs':techs})
 
 
 def add_course(request):
     vals = request.POST.dict()
-    course = Courses(course_name=vals['name'],course_decription=vals['course_descript'])
+    course = Courses(course_name=vals['course_name'],course_description=vals['course_description'])
     course.save()
     #load the add_project page
-    exps = Experience.objects.filter(id=job.id)
+    projs = Projects.objects.filter(id=course.id)
     techs = Technologies.objects.all()
-    return render_to_response('course_project_form.html', {'course':course,'exps':exps,'techs':techs})
+    return render_to_response('course_project_form.html', {'course':course,'projs':projs,'techs':techs})
 
 def add_project(request,course_):
     vals = request.POST.dict()
-    proj = Projects(tech_used=vals['tech_used'],proj_description=vals['proj_descript'],course_exp=vals['courses'])
-    proj.course = course_
+    proj = Projects(proj_description=vals['proj_descript'])
+    proj.courses = course_
     proj.save()
     for tid in request.POST.getlist('tech_used[]'):
         tech = Technologies.objects.get(id=tid)
-        print "Tie-ing Tech ID to project_id" + proj.id + "add_tech" + tech.name
+        print "Tie-ing Tech ID to project_id" + str(proj.id) + "add_tech" + tech.name
         proj.tech_used.add(tech)
-    projs = Projects.objects.filter(course_id=course_)
+    projs = Projects.objects.filter(courses=course_)
     techs= Technologies.objects.all()
-    return render_to_response('course_project_form.html',{'projs':projs,'proj':proj,'techs':techs,'course':course_})
-
-def remove_entry(request,option):
-    options={
-        'job':remove_job(request),
-        'exp':remove_exp(request),
-        'tech':remove_tech(request),
-        'course':remove_course(request),
-        'project':remove_project(request)
-        }
-    form_html = options[option]
-    return form_html
+    return render_to_response('course_project_form.html',{'projs':projs,'added_proj':proj,'techs':techs,'course':course_})
 
 def goto_form(request, option):
     print "Print Option in Url is: "+ option
@@ -145,9 +157,9 @@ def exp_form(request):
     if 'add' in request.POST:
         return add_exp(request,job_)
     if 'remove' in request.POST:
-        return remove_exp(request)
+        return remove_exp(request,job_)
     techs = Technologies.objects.all() #To load a list for the form.
-    return render_to_response('exp_form.html',{'techs':techs,'exps':exps,'job':job_})
+    return render_to_response('job_exp_form.html',{'techs':techs,'exps':exps,'job':job_})
 
 def job_form(request):
     if 'add' in request.POST:
@@ -155,28 +167,28 @@ def job_form(request):
     if 'modify' in request.POST:
         return modify_job(request)
     jobs = Jobs.objects.all()
-    return render_tor_response('job_exp_form.html',{'jobs':jobs}) 
+    return render_to_response('job_form.html',{'jobs':jobs}) 
 
-def tech_from(request):
+def tech_form(request):
     if 'add' in request.POST:
         return add_tech(request)
     if 'remove' in request.POST:
         return remove_tech(request)
-    techs = Technologies.objects.all()
-    return render_to_respons('tech_from.html',{'techs':techs})
+    techs = Technologies.objects.all().order_by('tech_type')
+    return render_to_response('tech_form.html',{'techs':techs})
      
 def course_form(request):
     if 'add' in request.POST:
         return add_course(request)
     if 'modify' in request.POST:
         return modify_course(request)
-    coures = Courses.objects.all()
+    courses = Courses.objects.all()
     return render_to_response('course_form.html',{'courses':courses})
 
-def project_from(request):
+def project_form(request):
     if 'course_id' in request.POST:
-        course_ = Courses.objects.get(id=request.POST['course_id'])
-        projects = Projects.objects.filter(couse_id=course_)
+        course_ = Courses.objects.get(id=int(request.POST['course_id']))
+        projects = Projects.objects.filter(courses=course_)
     else:
         course_ = None
         projects = Projects.objects.filter(courses_id__isnull=True)
@@ -184,7 +196,7 @@ def project_from(request):
         return add_project(request,course_)
     if 'remove' in request.POST:
         return remove_project(request,course_)
-    techs = Projects.objects.all()
-    return render_to_response('project_form.html',{'project':projects,'techs':techs,'course':course_})
+    techs = Technologies.objects.all()
+    return render_to_response('course_project_form.html',{'project':projects,'techs':techs,'course':course_})
 
 

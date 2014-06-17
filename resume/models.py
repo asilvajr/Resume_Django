@@ -27,11 +27,24 @@ class Experiences(models.Model):
         tech_exp = models.ManyToManyField(Technologies)
         job = models.ForeignKey(Jobs)
 
-class Projects(models.Model):
-	tech_used = models.ManyToManyField(Technologies)
-	proj_description = models.TextField()
-	courses = models.ForeignKey(Experiences, blank=True, null=True)
-
 class Courses(models.Model):
 	course_name = models.CharField(max_length=30)
 	course_description = models.TextField()
+
+class Projects(models.Model):
+	tech_used = models.ManyToManyField(Technologies)
+	proj_description = models.TextField()
+	courses = models.ForeignKey(Courses, blank=True, null=True)
+
+#has not yet been sync'd
+class education(models.Model):
+	school_name  = models.TextField()
+	location = models.TextField()
+	start = models.DateField()
+	end =models.DateField()	
+	
+#has not yet been sync'd
+#class Notes(models.model):
+#	tech_note = models.ForeignKey(Technologies)
+#	job_note = models.ForeignKey(Jobs)
+#	exp_note = models.
